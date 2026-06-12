@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ЗВЕРЬ">
+<title>ЗВЕРЬ РЕЖИМ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--bg:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--border:#222;--gold:#D4A853;--gold2:#F0C060;--red:#C0392B;--green:#27AE60;--blue:#2980B9;--orange:#E67E22;--purple:#8E44AD;--text:#EAEAEA;--muted:#666;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;max-width:430px;margin:0 auto;padding-bottom:80px;overflow-x:hidden;}
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 18px 10px;position:sticky;top:0;z-index:100;}
+.header-top{display:flex;justify-content:space-between;align-items:center;}
+.app-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--gold);line-height:1;}
+.date-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.day-score{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold2);}
+.progress-bar{margin-top:8px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width 0.4s;}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--bg2);border-top:1px solid var(--border);display:flex;z-index:100;}
+.nav-btn{flex:1;padding:9px 2px 7px;background:none;border:none;color:var(--muted);font-size:8px;font-family:'Inter',sans-serif;font-weight:600;letter-spacing:0.3px;text-transform:uppercase;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.nav-btn.active{color:var(--gold);}
+.nav-icon{font-size:16px;line-height:1;}
+.screen{display:none;padding:12px 12px 0;}
+.screen.active{display:block;}
+.screen-label{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;color:var(--muted);padding:0 2px 8px;}
+.section{background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;}
+.section-header{padding:11px 14px 9px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:var(--gold);}
+.section-time{font-size:11px;color:var(--muted);font-weight:600;}
+.check-item{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;gap:11px;user-select:none;}
+.check-item:last-child{border-bottom:none;}
+.check-item:active{background:var(--bg3);}
+.check-box{width:21px;height:21px;border:2px solid var(--border);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-size:12px;}
+.check-item.done .check-box{background:var(--green);border-color:var(--green);}
+.check-label{font-size:13px;font-weight:500;flex:1;line-height:1.3;}
+.check-sub{font-size:10px;color:var(--muted);margin-top:1px;}
+.check-item.done .check-label{color:var(--muted);text-decoration:line-through;}
+.num-item{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);gap:10px;}
+.num-item:last-child{border-bottom:none;}
+.num-label{font-size:13px;font-weight:500;flex:1;line-height:1.3;}
+.num-sub{font-size:10px;color:var(--muted);}
+.num-controls{display:flex;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.num-btn{width:32px;height:32px;background:none;border:none;color:var(--gold);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.num-btn:active{background:var(--border);}
+.num-value{min-width:32px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:19px;}
+
+/* PLAN 30-MIN BLOCKS */
+.plan-block{display:flex;align-items:stretch;margin-bottom:3px;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+.plan-time-col{width:52px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;border-right:1px solid var(--border);}
+.plan-stamp{font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--gold);letter-spacing:0.5px;line-height:1;}
+.plan-body{flex:1;padding:9px 12px;display:flex;align-items:center;gap:10px;}
+.plan-body.c-gold{background:#1a1500;}
+.plan-body.c-green{background:#0d1a10;}
+.plan-body.c-blue{background:#0d1320;}
+.plan-body.c-orange{background:#1a1000;}
+.plan-body.c-red{background:#1a0d0d;}
+.plan-body.c-purple{background:#130d1a;}
+.plan-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.c-gold .plan-dot{background:var(--gold);}
+.c-green .plan-dot{background:var(--green);}
+.c-blue .plan-dot{background:var(--blue);}
+.c-orange .plan-dot{background:var(--orange);}
+.c-red .plan-dot{background:var(--red);}
+.c-purple .plan-dot{background:var(--purple);}
+.plan-info{flex:1;}
+.plan-name{font-size:12px;font-weight:700;line-height:1.3;}
+.plan-desc{font-size:10px;color:var(--muted);margin-top:1px;line-height:1.4;}
+.plan-timer-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--gold);font-size:10px;font-weight:700;padding:4px 8px;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;}
+.plan-timer-btn.running{border-color:var(--green);color:var(--green);}
+.plan-timer-btn:active{opacity:0.7;}
+
+/* ACTIVE TIMER BANNER */
+.timer-banner{background:linear-gradient(135deg,#1a1500,#0d1a00);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:10px;display:none;align-items:center;justify-content:space-between;}
+.timer-banner.active{display:flex;}
+.timer-task{font-size:12px;font-weight:600;flex:1;line-height:1.3;}
+.timer-clock{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold2);letter-spacing:2px;margin:0 10px;}
+.timer-stop{background:none;border:1px solid var(--red);border-radius:6px;color:var(--red);font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer;}
+
+/* TASKS */
+.task-item{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);gap:10px;}
+.task-item:last-child{border-bottom:none;}
+.task-check{width:20px;height:20px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;}
+.task-item.done-task .task-check{background:var(--green);border-color:var(--green);}
+.task-content{flex:1;cursor:pointer;}
+.task-title{font-size:13px;font-weight:600;line-height:1.3;}
+.task-item.done-task .task-title{color:var(--muted);text-decoration:line-through;}
+.task-time{font-size:10px;color:var(--gold);font-weight:600;margin-top:1px;}
+.task-del{width:28px;height:28px;background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0.6;}
+.task-del:active{opacity:1;}
+.add-task-form{padding:12px 14px;border-top:1px solid var(--border);}
+.add-row{display:flex;gap:8px;margin-bottom:8px;}
+.add-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;}
+.add-input:focus{outline:none;border-color:var(--gold);}
+.add-btn{background:var(--gold);border:none;border-radius:8px;padding:9px 14px;color:#000;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;}
+.add-btn:active{opacity:0.8;}
+.time-input{width:80px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 10px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;}
+.time-input:focus{outline:none;border-color:var(--gold);}
+
+/* REPORT */
+.report-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.report-title{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted);margin-bottom:10px;}
+.report-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.report-row:last-child{border-bottom:none;}
+.report-key{color:var(--muted);}
+.report-val{font-weight:700;}
+.report-val.good{color:var(--green);}
+.report-val.bad{color:var(--red);}
+.big-score{text-align:center;padding:14px 0 6px;}
+.big-score-num{font-family:'Bebas Neue',sans-serif;font-size:64px;line-height:1;color:var(--gold);}
+.big-score-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+.score-verdict{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-top:5px;}
+.copy-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:#000;cursor:pointer;margin-bottom:10px;}
+.copy-btn:active{opacity:0.8;}
+.reset-btn{width:100%;padding:11px;background:none;border:1px solid var(--red);border-radius:10px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--red);cursor:pointer;margin-bottom:8px;}
+.install-btn{width:100%;padding:11px;background:none;border:1px solid var(--gold);border-radius:10px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--gold);cursor:pointer;}
+.streak-row{display:flex;gap:4px;flex-wrap:wrap;padding:10px 14px;}
+.streak-dot{width:24px;height:24px;border-radius:5px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:var(--muted);}
+.streak-dot.done{background:var(--green);border-color:var(--green);color:#fff;}
+.streak-dot.today{border-color:var(--gold);color:var(--gold);}
+.notif-banner{background:#0d1320;border:1px solid var(--blue);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:none;}
+.notif-banner.show{display:block;}
+.notif-text{font-size:12px;line-height:1.5;}
+.notif-time{font-size:10px;color:var(--blue);font-weight:700;margin-bottom:3px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div><div class="app-title">ЗВЕРЬ РЕЖИМ</div><div class="date-label" id="dateLabel">—</div></div>
+    <div style="text-align:right"><div class="day-score" id="headerScore">0%</div><div class="date-label">ВЫПОЛНЕНО</div></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+
+<!-- ЖИЗНЬ -->
+<div class="screen active" id="screen-life">
+  <div class="screen-label">РЕЖИМ ДНЯ</div>
+  <div class="section">
+    <div class="section-header"><span class="section-title">УТРО</span><span class="section-time">07:00–08:00</span></div>
+    <div class="check-item" onclick="toggle(this)" data-key="wake"><div class="check-box"></div><div><div class="check-label">Подъём в 07:00</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="shower"><div class="check-box"></div><div><div class="check-label">Душ + умылся</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="breakfast"><div class="check-box"></div><div><div class="check-label">Завтрак + кофе</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="arrive"><div class="check-box"></div><div><div class="check-label">На работе в 08:00</div></div></div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="section-title">ТЕЛО</span><span class="section-time">ежедневно</span></div>
+    <div class="check-item" onclick="toggle(this)" data-key="gym"><div class="check-box"></div><div><div class="check-label">Спортзал / тренировка</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="steps"><div class="check-box"></div><div><div class="check-label">10 000 шагов</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="nofap"><div class="check-box"></div><div><div class="check-label">NoFap — держу</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="nosoda"><div class="check-box"></div><div><div class="check-label">Без сладкого / колы</div></div></div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="section-title">ВЕЧЕР</span><span class="section-time">21:00–00:00</span></div>
+    <div class="check-item" onclick="toggle(this)" data-key="leave21"><div class="check-box"></div><div><div class="check-label">Вышел с работы в 21:00</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="dinner"><div class="check-box"></div><div><div class="check-label">Поужинал</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="sleep"><div class="check-box"></div><div><div class="check-label">Лёг спать в 00:00</div></div></div>
+  </div>
+</div>
+
+<!-- РАБОТА -->
+<div class="screen" id="screen-work">
+  <div class="screen-label">РАБОЧИЙ ДЕНЬ</div>
+  <div class="section">
+    <div class="section-header"><span class="section-title">УТРО</span><span class="section-time">08:00–10:00</span></div>
+    <div class="check-item" onclick="toggle(this)" data-key="brainstorm"><div class="check-box"></div><div><div class="check-label">Brainstorm с Claude — план дня</div><div class="check-sub">08:00–08:30</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="stories"><div class="check-box"></div><div><div class="check-label">Stories / идеи контента записаны</div><div class="check-sub">08:30–09:00</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="meeting"><div class="check-box"></div><div><div class="check-label">Утреннее собрание с командой</div><div class="check-sub">09:00–09:30</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="tasks_set"><div class="check-box"></div><div><div class="check-label">Задачи Джомату + Monday обновлён</div><div class="check-sub">09:30–10:00</div></div></div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="section-title">НАЙМ</span><span class="section-time">10:00–12:00</span></div>
+    <div class="check-item" onclick="toggle(this)" data-key="hh1"><div class="check-box"></div><div><div class="check-label">Отклики HH/Kaspi — блок 1</div><div class="check-sub">10:00–10:30 — 25–50 откликов</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="hh2"><div class="check-box"></div><div><div class="check-label">Отклики HH/Kaspi — блок 2</div><div class="check-sub">10:30–11:00 — ещё 25–50 откликов</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="whatsapp_qual"><div class="check-box"></div><div><div class="check-label">WhatsApp квалификация</div><div class="check-sub">11:00–11:30 — фильтр по 3 вопросам</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="interview_set"><div class="check-box"></div><div><div class="check-label">Назначены собеседования</div><div class="check-sub">11:30–12:00 — записать в задачи</div></div></div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="section-title">ЛИДЫ + ПРОДАЖИ</span><span class="section-time">12:00–18:00</span></div>
+    <div class="check-item" onclick="toggle(this)" data-key="leads_in"><div class="check-box"></div><div><div class="check-label">Входящие лиды обработаны</div><div class="check-sub">12:00–12:30 — Instagram/TikTok/WA/звонки</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="leads_monday"><div class="check-box"></div><div><div class="check-label">Лиды занесены в Monday</div><div class="check-sub">12:30–13:00 — имя, модель, источник, статус</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="clients_work"><div class="check-box"></div><div><div class="check-label">Работа с клиентами / показы</div><div class="check-sub">14:00–15:30 — тест-драйвы, расчёты</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="interview_done"><div class="check-box"></div><div><div class="check-label">Собеседование проведено</div><div class="check-sub">15:30–17:00 — добавить в Monday Найм</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="followup"><div class="check-box"></div><div><div class="check-label">Follow-up по старым лидам</div><div class="check-sub">17:00–17:30 — нет ответа 2–3 дня → написать</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="content_prep"><div class="check-box"></div><div><div class="check-label">Подготовка сценария видео</div><div class="check-sub">17:30–18:00 — что снимаем сегодня</div></div></div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="section-title">ИТОГ + КОНТЕНТ</span><span class="section-time">18:00–21:00</span></div>
+    <div class="check-item" onclick="toggle(this)" data-key="report_done"><div class="check-box"></div><div><div class="check-label">Отчёт дня + клиенты в CRM</div><div class="check-sub">18:00–18:30</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="next_plan"><div class="check-box"></div><div><div class="check-label">План на завтра готов</div><div class="check-sub">18:30–19:00</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="video_shot"><div class="check-box"></div><div><div class="check-label">Видео снято</div><div class="check-sub">19:00–19:30 — вечерний свет</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="video_edited"><div class="check-box"></div><div><div class="check-label">Видео смонтировано (VEED)</div><div class="check-sub">19:30–20:00</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="video_posted"><div class="check-box"></div><div><div class="check-label">Видео выложено @g_auto_ala2</div><div class="check-sub">20:00–20:30 — пик TikTok</div></div></div>
+    <div class="check-item" onclick="toggle(this)" data-key="stream"><div class="check-box"></div><div><div class="check-label">Прямой эфир (если по плану)</div><div class="check-sub">20:30–21:00</div></div></div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="section-title">ЧИСЛА ДНЯ</span></div>
+    <div class="num-item"><div class="num-label">Откликов найм<div class="num-sub">HH / Kaspi</div></div><div class="num-controls"><button class="num-btn" onclick="decNum('outreach')">−</button><span class="num-value" id="val-outreach">0</span><button class="num-btn" onclick="incNum('outreach')">+</button></div></div>
+    <div class="num-item"><div class="num-label">Лидов получено</div><div class="num-controls"><button class="num-btn" onclick="decNum('leads')">−</button><span class="num-value" id="val-leads">0</span><button class="num-btn" onclick="incNum('leads')">+</button></div></div>
+    <div class="num-item"><div class="num-label">Продаж закрыто</div><div class="num-controls"><button class="num-btn" onclick="decNum('sales')">−</button><span class="num-value" id="val-sales">0</span><button class="num-btn" onclick="incNum('sales')">+</button></div></div>
+    <div class="num-item"><div class="num-label">Собеседований</div><div class="num-controls"><button class="num-btn" onclick="decNum('interviews')">−</button><span class="num-value" id="val-interviews">0</span><button class="num-btn" onclick="incNum('interviews')">+</button></div></div>
+  </div>
+</div>
+
+<!-- ПЛАН 30 МИН -->
+<div class="screen" id="screen-schedule">
+  <div class="screen-label">БЛОКИ ПО 30 МИНУТ</div>
+
+  <div class="timer-banner" id="timerBanner">
+    <div class="timer-task" id="timerTask">—</div>
+    <div class="timer-clock" id="timerClock">30:00</div>
+    <button class="timer-stop" onclick="stopTimer()">СТОП</button>
+  </div>
+
+  <div id="planBlocks"></div>
+</div>
+
+<!-- ЗАДАЧИ -->
+<div class="screen" id="screen-tasks">
+  <div class="screen-label">ЗАДАЧИ И ВСТРЕЧИ</div>
+
+  <div class="notif-banner" id="notifBanner">
+    <div class="notif-time" id="notifTime">—</div>
+    <div class="notif-text" id="notifText">—</div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-title">ДОБАВИТЬ ЗАДАЧУ</span></div>
+    <div class="add-task-form">
+      <div class="add-row">
+        <input class="add-input" id="taskInput" type="text" placeholder="Задача или встреча...">
+        <input class="time-input" id="taskTime" type="time">
+      </div>
+      <button class="add-btn" onclick="addTask()" style="width:100%">+ ДОБАВИТЬ</button>
+    </div>
+  </div>
+
+  <div class="section" id="tasksList">
+    <div class="section-header"><span class="section-title">СЕГОДНЯ</span><span id="tasksCount" class="section-time">0 задач</span></div>
+    <div id="tasksContainer"><div style="padding:16px 14px;font-size:13px;color:var(--muted)">Задач пока нет. Добавь встречу или важное дело.</div></div>
+  </div>
+</div>
+
+<!-- СТРИК -->
+<div class="screen" id="screen-streak">
+  <div class="screen-label">30-ДНЕВНЫЙ СТРИК</div>
+  <div class="section">
+    <div class="section-header"><span class="section-title">ИЮНЬ – ИЮЛЬ 2026</span></div>
+    <div class="streak-row" id="streakGrid"></div>
+  </div>
+  <div class="section">
+    <div class="section-header"><span class="section-title">СТАТИСТИКА</span></div>
+    <div class="report-row" style="padding:9px 14px;border-bottom:1px solid var(--border)"><span class="report-key">Дней выполнено (≥70%)</span><span class="report-val good" id="stat-done">0</span></div>
+    <div class="report-row" style="padding:9px 14px;border-bottom:1px solid var(--border)"><span class="report-key">Дней пропущено</span><span class="report-val bad" id="stat-miss">0</span></div>
+    <div class="report-row" style="padding:9px 14px;border-bottom:1px solid var(--border)"><span class="report-key">Откликов найм (итого)</span><span class="report-val" id="stat-outreach">0</span></div>
+    <div class="report-row" style="padding:9px 14px"><span class="report-key">Продаж за период</span><span class="report-val" id="stat-sales">0</span></div>
+  </div>
+</div>
+
+<!-- ОТЧЁТ -->
+<div class="screen" id="screen-report">
+  <div class="screen-label">ОТЧЁТ ДНЯ</div>
+  <div class="report-card">
+    <div class="big-score">
+      <div class="big-score-num" id="bigScore">0%</div>
+      <div class="big-score-label">ВЫПОЛНЕНИЕ ДНЯ</div>
+      <div class="score-verdict" id="scoreVerdict" style="color:var(--muted)">—</div>
+    </div>
+  </div>
+  <div class="report-card">
+    <div class="report-title">ЖИЗНЬ</div>
+    <div class="report-row"><span class="report-key">Подъём 07:00</span><span class="report-val" id="r-wake">—</span></div>
+    <div class="report-row"><span class="report-key">Спортзал</span><span class="report-val" id="r-gym">—</span></div>
+    <div class="report-row"><span class="report-key">10k шагов</span><span class="report-val" id="r-steps">—</span></div>
+    <div class="report-row"><span class="report-key">NoFap</span><span class="report-val" id="r-nofap">—</span></div>
+    <div class="report-row"><span class="report-key">Без сладкого</span><span class="report-val" id="r-nosoda">—</span></div>
+  </div>
+  <div class="report-card">
+    <div class="report-title">РАБОТА</div>
+    <div class="report-row"><span class="report-key">Планёрка</span><span class="report-val" id="r-meeting">—</span></div>
+    <div class="report-row"><span class="report-key">Найм отклики</span><span class="report-val" id="r-hh">—</span></div>
+    <div class="report-row"><span class="report-key">Лиды в Monday</span><span class="report-val" id="r-lm">—</span></div>
+    <div class="report-row"><span class="report-key">Видео выложено</span><span class="report-val" id="r-vid">—</span></div>
+    <div class="report-row"><span class="report-key">Отчёт + CRM</span><span class="report-val" id="r-rep">—</span></div>
+  </div>
+  <div class="report-card">
+    <div class="report-title">ЧИСЛА</div>
+    <div class="report-row"><span class="report-key">Откликов найм</span><span class="report-val" id="r-out">0</span></div>
+    <div class="report-row"><span class="report-key">Лидов получено</span><span class="report-val" id="r-ld">0</span></div>
+    <div class="report-row"><span class="report-key">Продаж</span><span class="report-val" id="r-sl">0</span></div>
+    <div class="report-row"><span class="report-key">Собеседований</span><span class="report-val" id="r-iv">0</span></div>
+  </div>
+  <button class="copy-btn" onclick="copyReport()">📋 СКОПИРОВАТЬ ОТЧЁТ ДЛЯ CLAUDE</button>
+  <button class="reset-btn" onclick="resetDay()">Сбросить день</button>
+  <button class="install-btn" onclick="installApp()">📲 ДОБАВИТЬ НА ГЛАВНЫЙ ЭКРАН</button>
+  <div style="height:16px"></div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showScreen('life',this)"><span class="nav-icon">🔥</span>ЖИЗНЬ</button>
+  <button class="nav-btn" onclick="showScreen('work',this)"><span class="nav-icon">💼</span>РАБОТА</button>
+  <button class="nav-btn" onclick="showScreen('schedule',this)"><span class="nav-icon">⏱</span>30 МИН</button>
+  <button class="nav-btn" onclick="showScreen('tasks',this)"><span class="nav-icon">📌</span>ЗАДАЧИ</button>
+  <button class="nav-btn" onclick="showScreen('streak',this)"><span class="nav-icon">📅</span>СТРИК</button>
+  <button class="nav-btn" onclick="showScreen('report',this)"><span class="nav-icon">📊</span>ОТЧЁТ</button>
+</nav>
+
+<script>
+// ---- DATA ----
+const PLAN = [
+  {t:'07:00',n:'Подъём. Душ. Завтрак.',d:'Встал — сразу душ. Кофе. Выход в 07:45.',c:'c-gold'},
+  {t:'07:30',n:'Дорога на работу',d:'В машине — слушай мотивацию или тишина.',c:'c-gold'},
+  {t:'08:00',n:'Brainstorm с Claude',d:'Открыть Claude → план дня → 3 идеи для видео.',c:'c-blue'},
+  {t:'08:30',n:'Stories и контент-идеи',d:'Записать голосом или текстом. Снять короткую Story.',c:'c-blue'},
+  {t:'09:00',n:'Планёрка с командой',d:'Итоги вчера → задачи Джомату → контроль лидов.',c:'c-gold'},
+  {t:'09:30',n:'Monday обновить',d:'Открыть лиды → выставить статусы → добавить задачи.',c:'c-gold'},
+  {t:'10:00',n:'НАЙМ — Отклики блок 1',d:'HH.kz / Kaspi → 25–50 откликов. Шаблон готов.',c:'c-green'},
+  {t:'10:30',n:'НАЙМ — Отклики блок 2',d:'Ещё 25–50 откликов. Итого 50–100 за утро.',c:'c-green'},
+  {t:'11:00',n:'НАЙМ — WhatsApp фильтр',d:'Ответили ~30% → 3 вопроса → годен / не годен.',c:'c-green'},
+  {t:'11:30',n:'НАЙМ — Назначить собеседования',d:'Подтвердить на 15:30–17:00. Записать в задачи.',c:'c-green'},
+  {t:'12:00',n:'ЛИДЫ — Входящие',d:'Instagram + TikTok + WhatsApp + звонки → обработать.',c:'c-orange'},
+  {t:'12:30',n:'ЛИДЫ — Занести в Monday',d:'Каждый лид: имя, модель, источник, статус, заметка.',c:'c-orange'},
+  {t:'13:00',n:'Обед',d:'30 минут. Без телефона. Выйди подышать.',c:'c-gold'},
+  {t:'13:30',n:'Follow-up холодные лиды',d:'Нет ответа 2–3 дня → написать снова. Тёплые → дожимать.',c:'c-orange'},
+  {t:'14:00',n:'ПРОДАЖИ — Клиенты / показы',d:'Тест-драйвы, расчёты кредита, закрытие сделок.',c:'c-orange'},
+  {t:'14:30',n:'ПРОДАЖИ — Работа с возражениями',d:'Книга продаж → применяй техники. Джомат на полу.',c:'c-orange'},
+  {t:'15:00',n:'ПРОДАЖИ — Дожим тёплых',d:'Позвонить тем кто думает > 3 дней. Назначить встречу.',c:'c-orange'},
+  {t:'15:30',n:'НАЙМ — Собеседование',d:'20–30 минут. «Продай мне телефон». Энергия → потенциал.',c:'c-green'},
+  {t:'16:00',n:'НАЙМ — Собеседование 2 (если есть)',d:'Или дожим откликов / квалификация WhatsApp.',c:'c-green'},
+  {t:'16:30',n:'ЛИДЫ — Обработка дневных',d:'Все новые лиды с 12:00 → занести в Monday.',c:'c-orange'},
+  {t:'17:00',n:'Контент — Сценарий',d:'Что снимаем сегодня? Локация, ракурс, текст. 30 мин.',c:'c-blue'},
+  {t:'17:30',n:'Контент — Реквизит / подготовка',d:'Машина чистая? Свет? Одежда? Всё готово к съёмке.',c:'c-blue'},
+  {t:'18:00',n:'ОТЧЁТ ДНЯ',d:'Все клиенты → Monday. Числа → трекер. Итог дня.',c:'c-gold'},
+  {t:'18:30',n:'План на завтра',d:'Задачи на утро. Собеседования? Показы? Готов список.',c:'c-gold'},
+  {t:'19:00',n:'СЪЁМКА — Видео для TikTok',d:'Вечерний свет — идеально. Haohan в кадре. Снимай.',c:'c-blue'},
+  {t:'19:30',n:'СЪЁМКА — Ролик 2 или Stories',d:'Другой формат: закулисье, отзыв, тест-драйв.',c:'c-blue'},
+  {t:'20:00',n:'Монтаж в VEED',d:'Субтитры → обрезка → текст → экспорт.',c:'c-blue'},
+  {t:'20:30',n:'Публикация в @g_auto_ala2',d:'20:30–21:00 — пик активности аудитории TikTok.',c:'c-blue'},
+  {t:'21:00',n:'ВЫХОД ДОМОЙ',d:'Строго. Без «ещё 5 минут». Телефон в карман.',c:'c-red'},
+  {t:'21:30',n:'Ужин',d:'Дома. Нормальная еда. Не фастфуд если можно.',c:'c-gold'},
+  {t:'22:00',n:'Личное время',d:'TikTok / кино / отдых. Ровно до 23:00.',c:'c-gold'},
+  {t:'23:00',n:'Подготовка ко сну',d:'Убрать телефон. Тишина. Мозгу нужен выключатель.',c:'c-purple'},
+  {t:'00:00',n:'СОН',d:'7 часов. Подъём в 07:00.',c:'c-purple'},
+];
+
+const KEYS=['wake','shower','breakfast','arrive','gym','steps','nofap','nosoda','leave21','dinner','sleep','brainstorm','stories','meeting','tasks_set','hh1','hh2','whatsapp_qual','interview_set','leads_in','leads_monday','clients_work','interview_done','followup','content_prep','report_done','next_plan','video_shot','video_edited','video_posted','stream'];
+const NUMS=['outreach','leads','sales','interviews'];
+const START=new Date('2026-06-12');
+
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function getState(){try{return JSON.parse(localStorage.getItem('zver3')||'{}');}catch(e){return{};}}
+function saveState(s){localStorage.setItem('zver3',JSON.stringify(s));}
+function getDayData(k){const s=getState();if(!s[k])s[k]={checks:{},nums:{outreach:0,leads:0,sales:0,interviews:0},tasks:[]};if(!s[k].tasks)s[k].tasks=[];return s[k];}
+function saveDayData(k,d){const s=getState();s[k]=d;saveState(s);}
+const today=todayKey();
+
+function toggle(el){const k=el.dataset.key;const d=getDayData(today);d.checks[k]=!d.checks[k];saveDayData(today,d);renderAll();}
+function incNum(k){const d=getDayData(today);d.nums[k]=(d.nums[k]||0)+1;saveDayData(today,d);renderAll();}
+function decNum(k){const d=getDayData(today);d.nums[k]=Math.max(0,(d.nums[k]||0)-1);saveDayData(today,d);renderAll();}
+
+// TIMER
+let timerInterval=null,timerSecs=1800,timerTask='';
+function startTimer(taskName,btn){
+  if(timerInterval){clearInterval(timerInterval);document.querySelectorAll('.plan-timer-btn').forEach(b=>{b.textContent='▶ СТАРТ';b.classList.remove('running');});}
+  timerSecs=1800;timerTask=taskName;
+  document.getElementById('timerTask').textContent=taskName;
+  document.getElementById('timerBanner').classList.add('active');
+  btn.textContent='⏱ ИДЁТ';btn.classList.add('running');
+  timerInterval=setInterval(()=>{
+    timerSecs--;
+    const m=Math.floor(timerSecs/60),s=timerSecs%60;
+    document.getElementById('timerClock').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    if(timerSecs<=0){
+      clearInterval(timerInterval);timerInterval=null;
+      document.getElementById('timerClock').textContent='00:00';
+      btn.textContent='✅ ГОТОВО';btn.classList.remove('running');
+      if('Notification' in window && Notification.permission==='granted'){new Notification('ЗВЕРЬ РЕЖИМ',{body:'30 минут: '+taskName+' — ГОТОВО! Переходи к следующему блоку.',icon:''});}
+      else{alert('✅ 30 минут истекло!\n'+taskName+'\nПереходи к следующему блоку.');}
+    }
+  },1000);
+}
+function stopTimer(){
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+  document.getElementById('timerBanner').classList.remove('active');
+  document.querySelectorAll('.plan-timer-btn').forEach(b=>{b.textContent='▶ СТАРТ';b.classList.remove('running');});
+}
+
+function buildPlanBlocks(){
+  const now=new Date();
+  const container=document.getElementById('planBlocks');
+  let html='';
+  PLAN.forEach((p,i)=>{
+    const [hh,mm]=p.t.split(':').map(Number);
+    const blockTime=new Date();blockTime.setHours(hh,mm,0,0);
+    const isCurrent=now>=blockTime&&(i===PLAN.length-1||now<new Date(now.getFullYear(),now.getMonth(),now.getDate(),...PLAN[i+1].t.split(':').map(Number)));
+    html+=`<div class="plan-block" style="${isCurrent?'border-color:var(--gold);':''}" >
+      <div class="plan-time-col" style="${isCurrent?'background:#1a1500;':''}" ><div class="plan-stamp">${p.t}</div></div>
+      <div class="plan-body ${p.c}" style="flex:1">
+        <div class="plan-dot"></div>
+        <div class="plan-info"><div class="plan-name">${p.n}</div><div class="plan-desc">${p.d}</div></div>
+        <button class="plan-timer-btn" onclick="startTimer('${p.n.replace(/'/g,"\\'")}',this)">▶ СТАРТ</button>
+      </div>
+    </div>`;
+  });
+  container.innerHTML=html;
+}
+
+// TASKS
+function addTask(){
+  const input=document.getElementById('taskInput');
+  const timeInput=document.getElementById('taskTime');
+  const title=input.value.trim();
+  if(!title)return;
+  const d=getDayData(today);
+  d.tasks.push({id:Date.now(),title,time:timeInput.value||'',done:false});
+  saveDayData(today,d);
+  input.value='';timeInput.value='';
+  renderTasks();
+  scheduleNotif(title,timeInput.value);
+}
+function toggleTask(id){
+  const d=getDayData(today);
+  const t=d.tasks.find(x=>x.id===id);
+  if(t)t.done=!t.done;
+  saveDayData(today,d);renderTasks();
+}
+function deleteTask(id){
+  const d=getDayData(today);
+  d.tasks=d.tasks.filter(x=>x.id!==id);
+  saveDayData(today,d);renderTasks();
+}
+function renderTasks(){
+  const d=getDayData(today);
+  const tasks=d.tasks.sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+  const container=document.getElementById('tasksContainer');
+  const count=document.getElementById('tasksCount');
+  if(!tasks.length){container.innerHTML='<div style="padding:16px 14px;font-size:13px;color:var(--muted)">Задач пока нет. Добавь встречу или важное дело.</div>';count.textContent='0 задач';return;}
+  count.textContent=tasks.filter(t=>!t.done).length+' / '+tasks.length;
+  container.innerHTML=tasks.map(t=>`
+    <div class="task-item ${t.done?'done-task':''}">
+      <div class="task-check" onclick="toggleTask(${t.id})">${t.done?'✓':''}</div>
+      <div class="task-content" onclick="toggleTask(${t.id})">
+        <div class="task-title">${t.title}</div>
+        ${t.time?`<div class="task-time">⏰ ${t.time}</div>`:''}
+      </div>
+      <button class="task-del" onclick="deleteTask(${t.id})">×</button>
+    </div>`).join('');
+}
+
+// NOTIFICATIONS
+function requestNotifPerm(){
+  if('Notification' in window && Notification.permission==='default'){Notification.requestPermission();}
+}
+function scheduleNotif(title,time){
+  if(!time||!('Notification' in window))return;
+  const [h,m]=time.split(':').map(Number);
+  const now=new Date();
+  const target=new Date();target.setHours(h,m,0,0);
+  const diff=target-now;
+  if(diff>0&&diff<86400000){
+    setTimeout(()=>{
+      if(Notification.permission==='granted'){new Notification('ЗВЕРЬ РЕЖИМ — ЗАДАЧА',{body:'⏰ '+title});}
+      else{showNotifBanner('⏰ '+time,title);}
+    },diff);
+    const pre=diff-15*60000;
+    if(pre>0){setTimeout(()=>{
+      if(Notification.permission==='granted'){new Notification('Через 15 минут',{body:title});}
+      else{showNotifBanner('Через 15 минут',title);}
+    },pre);}
+  }
+}
+function showNotifBanner(timeStr,text){
+  const b=document.getElementById('notifBanner');
+  document.getElementById('notifTime').textContent=timeStr;
+  document.getElementById('notifText').textContent=text;
+  b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'),8000);
+}
+// Interval-based check for task reminders
+setInterval(()=>{
+  const d=getDayData(today);
+  const now=new Date();
+  const hh=String(now.getHours()).padStart(2,'0');
+  const mm=String(now.getMinutes()).padStart(2,'0');
+  const timeStr=hh+':'+mm;
+  d.tasks.forEach(t=>{
+    if(t.time&&t.time===timeStr&&!t.done&&!t.notified){
+      t.notified=true;
+      saveDayData(today,d);
+      showNotifBanner('⏰ '+t.time,t.title);
+      if(Notification.permission==='granted'){new Notification('ЗВЕРЬ РЕЖИМ',{body:'⏰ '+t.title});}
+    }
+  });
+},30000);
+
+function renderAll(){
+  const d=getDayData(today);const ch=d.checks;const nm=d.nums;
+  document.querySelectorAll('.check-item').forEach(el=>{const k=el.dataset.key;el.classList.toggle('done',!!ch[k]);el.querySelector('.check-box').textContent=ch[k]?'✓':'';});
+  NUMS.forEach(k=>{const e=document.getElementById('val-'+k);if(e)e.textContent=nm[k]||0;});
+  const done=KEYS.filter(k=>ch[k]).length;
+  const pct=Math.round(done/KEYS.length*100);
+  document.getElementById('headerScore').textContent=pct+'%';
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('bigScore').textContent=pct+'%';
+  let v,vc;
+  if(pct>=90){v='ЗВЕРЬ 🔥';vc='#D4A853';}else if(pct>=70){v='ХОРОШО ✅';vc='#27AE60';}else if(pct>=50){v='СРЕДНЕ ⚡';vc='#F39C12';}else{v='СЛАБО ❌';vc='#C0392B';}
+  const ve=document.getElementById('scoreVerdict');ve.textContent=v;ve.style.color=vc;
+  function yn(id,key){const e=document.getElementById('r-'+id);if(!e)return;e.textContent=ch[key]?'✅':'❌';e.className='report-val '+(ch[key]?'good':'bad');}
+  yn('wake','wake');yn('gym','gym');yn('steps','steps');yn('nofap','nofap');yn('nosoda','nosoda');
+  yn('meeting','meeting');yn('hh','hh1');yn('lm','leads_monday');yn('vid','video_posted');yn('rep','report_done');
+  const rn=(id,k)=>{const e=document.getElementById('r-'+id);if(e)e.textContent=nm[k]||0;};
+  rn('out','outreach');rn('ld','leads');rn('sl','sales');rn('iv','interviews');
+  renderStreak();renderTasks();
+}
+function renderStreak(){
+  const grid=document.getElementById('streakGrid');if(!grid)return;
+  const s=getState();let html='',dd=0,mm=0,ot=0,sl=0;
+  for(let i=0;i<30;i++){
+    const dt=new Date(START);dt.setDate(dt.getDate()+i);
+    const k=dt.toISOString().slice(0,10);const dn=dt.getDate();
+    const isT=k===today;const isPast=dt<new Date()&&!isT;
+    const data=s[k];let cls='streak-dot',lb=dn;
+    if(isT)cls+=' today';
+    if(data){const done2=KEYS.filter(x=>data.checks[x]).length;if(done2/KEYS.length>=0.7){cls+=' done';dd++;lb='✓';}else if(isPast)mm++;ot+=(data.nums?.outreach||0);sl+=(data.nums?.sales||0);}else if(isPast)mm++;
+    html+=`<div class="${cls}">${lb}</div>`;
+  }
+  grid.innerHTML=html;
+  const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  se('stat-done',dd);se('stat-miss',mm);se('stat-outreach',ot);se('stat-sales',sl);
+}
+function showScreen(n,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+n).classList.add('active');btn.classList.add('active');
+}
+function copyReport(){
+  const d=getDayData(today);const ch=d.checks;const nm=d.nums;
+  const done=KEYS.filter(k=>ch[k]).length;const pct=Math.round(done/KEYS.length*100);
+  const lines=[`ОТЧЁТ ЗВЕРЬ РЕЖИМ — ${today}`,`Выполнение: ${pct}% (${done}/${KEYS.length})`,``,`ЖИЗНЬ:`,`Подъём 07:00: ${ch.wake?'✅':'❌'}`,`Спортзал: ${ch.gym?'✅':'❌'}`,`10k шагов: ${ch.steps?'✅':'❌'}`,`NoFap: ${ch.nofap?'✅':'❌'}`,`Без сладкого: ${ch.nosoda?'✅':'❌'}`,``,`РАБОТА:`,`Планёрка: ${ch.meeting?'✅':'❌'}`,`Найм отклики: ${ch.hh1?'✅':'❌'}`,`Лиды в Monday: ${ch.leads_monday?'✅':'❌'}`,`Видео выложено: ${ch.video_posted?'✅':'❌'}`,`Отчёт/CRM: ${ch.report_done?'✅':'❌'}`,``,`ЧИСЛА:`,`Откликов найм: ${nm.outreach||0}`,`Лидов получено: ${nm.leads||0}`,`Продаж: ${nm.sales||0}`,`Собеседований: ${nm.interviews||0}`];
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{alert('Скопировано! Вставь в Claude.');}).catch(()=>{prompt('Скопируй:',lines.join('\n'));});
+}
+function resetDay(){if(!confirm('Сбросить данные сегодня?'))return;const s=getState();delete s[today];saveState(s);renderAll();}
+function installApp(){alert('На iPhone: нажми «Поделиться» → «На экран Домой»\nНа Android: нажми ⋮ → «Добавить на главный экран»');}
+
+const days=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+const months=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const now=new Date();
+document.getElementById('dateLabel').textContent=days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()];
+buildPlanBlocks();
+renderAll();
+requestNotifPerm();
+// Rebuild plan blocks every minute to update current block highlight
+setInterval(buildPlanBlocks,60000);
+</script>
+</body>
+</html>
